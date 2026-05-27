@@ -6,6 +6,7 @@ import com.example.company_verification.repository.VerificationRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
@@ -16,7 +17,7 @@ class BackendService(
 ) {
     private val logger = LoggerFactory.getLogger(BackendService::class.java)
     private val mapper = jacksonObjectMapper()
-
+    @Transactional
     fun processRequest(verificationId: String, query: String): Map<String, Any?> {
         logger.info("Backend service called with verificationId: '$verificationId' and query: '$query'")
         var source = AppConstants.FREE_SERVICE
