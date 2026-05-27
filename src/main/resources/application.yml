@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: company-verification
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/company_verification_db
+    username: postgres
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  cache:
+    cache-names: freeCompanies,premiumCompanies
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=10m
+
+logging:
+  level:
+    com.example.company_verification: INFO
+  file:
+    name: logs/company-verification.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 7
