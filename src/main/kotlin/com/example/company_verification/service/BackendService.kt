@@ -1,5 +1,6 @@
 package com.example.company_verification.service
 
+import com.example.company_verification.AppConstants
 import com.example.company_verification.model.Verification
 import com.example.company_verification.repository.VerificationRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -16,7 +17,7 @@ class BackendService(
     private val mapper = jacksonObjectMapper()
 
     fun processRequest(verificationId: String, query: String): Map<String, Any?> {
-        var source = "FREE"
+        var source = AppConstants.FREE_SERVICE
         var activeCompanies: List<Map<String, Any?>> = emptyList()
         var status = "SUCCESS"
 
@@ -32,11 +33,11 @@ class BackendService(
                             "is_active" to it.isActive
                     )}
         } catch (e: Exception) {
-            source = "PREMIUM"
+            source = AppConstants.PREMIUM_SERVICE
         }
 
         if (activeCompanies.isEmpty()) {
-            source = "PREMIUM"
+            source = AppConstants.PREMIUM_SERVICE
             try {
                 val premiumResults = premiumService.searchByQuery(query)
                 activeCompanies = premiumResults
@@ -54,8 +55,8 @@ class BackendService(
         }
 
         val result: Map<String, Any?> = when {
-            status == "THIRD_PARTIES_DOWN" -> mapOf("status" to "Both third party services are unavailable")
-            activeCompanies.isEmpty() -> mapOf("status" to "No results found")
+            status == "THIRD_PARTIES_DOWN" -> mapOf("status" to AppConstants.BOTH_SERVICES_UNAVAILABLE)
+            activeCompanies.isEmpty() -> mapOf("status" to AppConstants.NO_RESULTS_FOUND)
             activeCompanies.size == 1 -> activeCompanies.first()
             else -> activeCompanies.first().toMutableMap().apply {
                 put("otherResults", activeCompanies.drop(1))
