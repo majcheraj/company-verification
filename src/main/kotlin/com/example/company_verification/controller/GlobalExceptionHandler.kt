@@ -3,6 +3,7 @@ package com.example.company_verification.controller
 import com.example.company_verification.AppConstants
 import com.example.company_verification.model.ErrorResponse
 import com.example.company_verification.model.ServiceUnavailableException
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MissingServletRequestParameterException
@@ -12,8 +13,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
+    private val logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+
     @ExceptionHandler(MissingServletRequestParameterException::class)
     fun handleMissingParams(ex: MissingServletRequestParameterException): ResponseEntity<ErrorResponse> {
+        logger.warn("Missing parameter: ${ex.parameterName}")
         val error = ErrorResponse(
                 status = HttpStatus.BAD_REQUEST.value(),
                 error = "Bad Request",
@@ -24,6 +28,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgument(ex: IllegalArgumentException): ResponseEntity<ErrorResponse> {
+        logger.warn("Validation error: ${ex.message}")
         val error = ErrorResponse(
                 status = HttpStatus.BAD_REQUEST.value(),
                 error = "Bad Request",
@@ -34,6 +39,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(ServiceUnavailableException::class)
     fun handleServiceUnavailable(ex: ServiceUnavailableException): ResponseEntity<ErrorResponse> {
+        logger.error("Service unavailable: ${ex.message}")
         val error = ErrorResponse(
                 status = HttpStatus.SERVICE_UNAVAILABLE.value(),
                 error = "Service Unavailable",
@@ -44,6 +50,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
+        logger.error("Unexpected error: ${ex.message}")
         val error = ErrorResponse(
                 status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 error = "Internal Server Error",
