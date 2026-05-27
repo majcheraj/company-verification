@@ -1,5 +1,6 @@
 package com.example.company_verification.service
 
+import kotlin.random.Random
 import com.example.company_verification.AppConstants
 import com.example.company_verification.model.FreeCompany
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -23,7 +24,7 @@ class FreeThirdPartyService {
     @Cacheable(value = ["freeCompanies"], key = "#query")
     fun searchByQuery(query: String): List<FreeCompany> {
         logger.info("FREE service called with query: '$query'")
-        if (Math.random() < 0.4) {
+        if (Random.nextDouble() < 0.4) {
             throw RuntimeException(AppConstants.FREE_SERVICE_UNAVAILABLE)
         }
         val results = companies.filter { it.cin.contains(query, ignoreCase = true) }

@@ -1,5 +1,6 @@
 package com.example.company_verification.service
 
+import kotlin.random.Random
 import com.example.company_verification.AppConstants
 import com.example.company_verification.model.PremiumCompany
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -22,7 +23,7 @@ class PremiumThirdPartyService {
     @Cacheable(value = ["premiumCompanies"], key = "#query")
     fun searchByQuery(query: String): List<PremiumCompany> {
         logger.info("PREMIUM service called with query: '$query'")
-        if (Math.random() < 0.1) {
+        if (Random.nextDouble() < 0.1) {
             throw RuntimeException(AppConstants.PREMIUM_SERVICE_UNAVAILABLE)
         }
         val results = companies.filter { it.companyIdentificationNumber.contains(query, ignoreCase = true) }
