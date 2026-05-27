@@ -4,6 +4,7 @@ import com.example.company_verification.AppConstants
 import com.example.company_verification.model.Verification
 import com.example.company_verification.repository.VerificationRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -13,10 +14,11 @@ class BackendService(
         private val premiumService: PremiumThirdPartyService,
         private val verificationRepository: VerificationRepository
 ) {
-
+    private val logger = LoggerFactory.getLogger(BackendService::class.java)
     private val mapper = jacksonObjectMapper()
 
     fun processRequest(verificationId: String, query: String): Map<String, Any?> {
+        logger.info("Backend service called with verificationId: '$verificationId' and query: '$query'")
         var source = AppConstants.FREE_SERVICE
         var activeCompanies: List<Map<String, Any?>> = emptyList()
         var status = "SUCCESS"
@@ -33,6 +35,7 @@ class BackendService(
                             "is_active" to it.isActive
                     )}
         } catch (e: Exception) {
+            logger.warn("FREE service failed, falling back to PREMIUM service")
             source = AppConstants.PREMIUM_SERVICE
         }
 
@@ -50,6 +53,7 @@ class BackendService(
                                 "isActive" to it.isActive
                         )}
             } catch (e: Exception) {
+                logger.error("PREMIUM service also failed, both services are unavailable")
                 status = "THIRD_PARTIES_DOWN"
             }
         }
@@ -62,6 +66,8 @@ class BackendService(
                 put("otherResults", activeCompanies.drop(1))
             }
         }
+
+        logger.info("Backend service returning result from '$source' for verificationId: '$verificationId'")
 
         val verification = Verification(
                 verificationId = verificationId,
