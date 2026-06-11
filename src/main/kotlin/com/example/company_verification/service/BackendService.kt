@@ -70,6 +70,17 @@ class BackendService(
 
         logger.info("Backend service returning result from '$source' for verificationId: '$verificationId'")
 
+        val existingVerification = verificationRepository.findById(verificationId)
+        if (existingVerification.isPresent) {
+            logger.info("Verification with id '$verificationId' already exists, returning existing result")
+            return mapOf(
+                    "verificationId" to existingVerification.get().verificationId,
+                    "query" to existingVerification.get().queryText,
+                    "result" to existingVerification.get().result,
+                    "message" to "This verificationId was already used for query '${existingVerification.get().queryText}'. Please generate a new verificationId for a new search."
+            )
+        }
+
         val verification = Verification(
                 verificationId = verificationId,
                 queryText = query,
