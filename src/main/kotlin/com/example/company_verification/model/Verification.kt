@@ -16,5 +16,8 @@ data class Verification(
         @Column(columnDefinition = "TEXT")
         val result: String,
 
-        val source: String
+        val source: String,
+
+        @Version
+        val version: Long = 0
 )

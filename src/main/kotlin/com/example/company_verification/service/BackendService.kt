@@ -17,9 +17,16 @@ class BackendService(
 ) {
     private val logger = LoggerFactory.getLogger(BackendService::class.java)
     private val mapper = jacksonObjectMapper()
+
     @Transactional
     fun processRequest(verificationId: String, query: String): Map<String, Any?> {
         logger.info("Backend service called with verificationId: '$verificationId' and query: '$query'")
+
+        val existingVerification = verificationRepository.findById(verificationId)
+        if (existingVerification.isPresent) {
+            return buildExistingVerificationResponse(verificationId)
+        }
+
         var source = AppConstants.FREE_SERVICE
         var activeCompanies: List<Map<String, Any?>> = emptyList()
         var status = "SUCCESS"
@@ -70,30 +77,37 @@ class BackendService(
 
         logger.info("Backend service returning result from '$source' for verificationId: '$verificationId'")
 
-        val existingVerification = verificationRepository.findById(verificationId)
-        if (existingVerification.isPresent) {
-            logger.info("Verification with id '$verificationId' already exists, returning existing result")
-            return mapOf(
-                    "verificationId" to existingVerification.get().verificationId,
-                    "query" to existingVerification.get().queryText,
-                    "result" to existingVerification.get().result,
-                    "message" to "This verificationId was already used for query '${existingVerification.get().queryText}'. Please generate a new verificationId for a new search."
+        try {
+            val verification = Verification(
+                    verificationId = verificationId,
+                    queryText = query,
+                    timestamp = LocalDateTime.now(),
+                    result = mapper.writeValueAsString(result),
+                    source = source
             )
+            verificationRepository.save(verification)
+        } catch (e: Exception) {
+            logger.warn("Concurrent request detected for verificationId: '$verificationId'")
+            return buildExistingVerificationResponse(verificationId)
         }
-
-        val verification = Verification(
-                verificationId = verificationId,
-                queryText = query,
-                timestamp = LocalDateTime.now(),
-                result = mapper.writeValueAsString(result),
-                source = source
-        )
-        verificationRepository.save(verification)
 
         return mapOf(
                 "verificationId" to verificationId,
                 "query" to query,
                 "result" to result
         )
+    }
+    private fun buildExistingVerificationResponse(verificationId: String): Map<String, Any?> {
+        val existingVerification = verificationRepository.findById(verificationId)
+        return if (existingVerification.isPresent) {
+            mapOf(
+                    "verificationId" to existingVerification.get().verificationId,
+                    "query" to existingVerification.get().queryText,
+                    "result" to existingVerification.get().result,
+                    "message" to "This verificationId was already used for query '${existingVerification.get().queryText}'. Please generate a new verificationId for a new search."
+            )
+        } else {
+            mapOf("message" to "Verification not found")
+        }
     }
 }
