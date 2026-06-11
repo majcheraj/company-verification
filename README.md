@@ -45,3 +45,14 @@ docker-compose up
 | GET | `/premium-third-party?query=` | Premium provider (10% error rate simulation) |
 | GET | `/backend-service?verificationId=&query=` | Smart fallback — Free → Premium |
 | GET | `/verifications/{verificationId}` | Retrieve stored verification by ID |
+
+## Additional Features
+
+### Idempotency
+Each request is tracked by a unique `verificationId`. If the same `verificationId` is used again, the service returns the cached result with an informative message instead of making a new request to the third-party services.
+
+### TTL (Time To Live)
+Verifications expire after 24 hours. After expiry, the service fetches fresh data from the third-party services and stores a new verification.
+
+### Concurrency
+The service handles concurrent requests safely using optimistic locking (`@Version`). If two requests with the same `verificationId` arrive simultaneously, only one will be processed and stored, while the other will receive the existing result.
