@@ -18,4 +18,5 @@ object AppConstants {
     const val FREE_SERVICE_JSON = "free_service_companies-1.json"
     const val PREMIUM_SERVICE_JSON = "premium_service_companies-1.json"
     const val VERIFICATION_ID_INVALID_FORMAT = "verificationId must be a valid GUID format (e.g. 123e4567-e89b-12d3-a456-426614174000)"
+    const val VERIFICATION_EXPIRED = "Verification has expired, fetching fresh data"
 }

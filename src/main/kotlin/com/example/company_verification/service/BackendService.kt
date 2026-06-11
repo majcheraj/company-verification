@@ -24,7 +24,14 @@ class BackendService(
 
         val existingVerification = verificationRepository.findById(verificationId)
         if (existingVerification.isPresent) {
-            return buildExistingVerificationResponse(verificationId)
+            val verification = existingVerification.get()
+            if (verification.expiresAt.isAfter(LocalDateTime.now())) {
+                logger.info("Returning cached verification for verificationId: '$verificationId'")
+                return buildExistingVerificationResponse(verificationId)
+            } else {
+                logger.info("Verification expired for verificationId: '$verificationId', fetching fresh data")
+                verificationRepository.delete(verification)
+            }
         }
 
         var source = AppConstants.FREE_SERVICE

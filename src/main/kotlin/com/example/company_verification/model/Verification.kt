@@ -19,5 +19,7 @@ data class Verification(
         val source: String,
 
         @Version
-        val version: Long = 0
+        val version: Long = 0,
+
+        val expiresAt: LocalDateTime = LocalDateTime.now().plusHours(24)
 )
